@@ -1,0 +1,26 @@
+---
+####################
+# CloudWatch Logs
+####################
+- name: install cloudwatch agent
+  yum: name=https://s3.amazonaws.com/amazoncloudwatch-agent/amazon_linux/amd64/latest/amazon-cloudwatch-agent.rpm
+  tags:
+    - cloudwatch
+
+####################
+# SSM Agent
+####################
+- name: install ssm agent
+  yum:
+    name: "https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm"
+    state: present
+  tags:
+    - ssm
+
+- name: start and enable ssm agent
+  service:
+    name: amazon-ssm-agent
+    state: started
+    enabled: yes
+  tags:
+    - ssm

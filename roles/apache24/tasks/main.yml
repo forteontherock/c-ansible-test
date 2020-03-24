@@ -1,0 +1,116 @@
+---
+- name: yum install for Apache Web Server
+  yum:
+    name: httpd24
+  tags:
+    - apache
+
+- name: start and enable to apache
+  service:
+    name: httpd
+    state: started
+    enabled: yes
+  tags:
+    - apache
+
+- name: copy httpd.conf
+  copy:
+    src: httpd.conf
+    dest: /etc/httpd/conf/httpd.conf
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart httpd
+  tags:
+    - apache
+
+- name: copy /etc/httpd/conf.d/
+  copy:
+    src: conf.d/
+    dest: /etc/httpd/conf.d/
+    backup: yes
+  notify: restart httpd
+  tags:
+    - apache
+
+- name: copy virtualhost config from template
+  template:
+    src: virtualhost.conf.j2
+    dest: /etc/httpd/conf.d/{{ item.domain }}.conf
+  with_items:
+    - "{{ site | default([]) }}"
+  notify: restart httpd
+  tags:
+    - apache
+
+- name: make virtualhost documentroot directory
+  file:
+    path: "/var/www/{{ item.domain }}"
+    state: directory
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    mode: 0755
+  with_items:
+    - "{{ site | default([]) }}"
+  tags:
+    - apache
+
+- name: copy logrotate config
+  copy:
+    src: logrotate.d/httpd
+    dest: /etc/logrotate.d/httpd
+    owner: root
+    group: root
+    mode: 0644
+  tags:
+    - apache
+
+- name: copy monit config
+  copy:
+    src: monit.d/httpd
+    dest: /etc/monit.d/httpd
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart monit
+  tags:
+    - apache
+
+- name: copy virtualhost log setting from template
+  template:
+    src: apache-awslogs-virtualhost.conf.j2
+    dest: /etc/awslogs/config/apache-{{ item.domain }}.conf
+  with_items:
+    - "{{ site | default([]) }}"
+  notify: restart awslogs agent
+  when: awslogs is defined and awslogs == "enable"
+  tags:
+    - apache
+
+- name: copy default log setting from template
+  template:
+    src: apache-awslogs-default.conf.j2
+    dest: /etc/awslogs/config/apache-default.conf
+  notify: restart awslogs agent
+  when: awslogs is defined and awslogs == "enable"
+  tags:
+    - apache
+
+- name: copy datadog apache integration file from template
+  template:
+    src: apache.yaml.j2
+    dest: /etc/dd-agent/conf.d/apache.yaml
+  notify: restart datadog-agent
+  when: dd_api_key is defined
+  tags:
+    - apache
+
+- include: php.yml
+  when: php is defined and php == "enable"
+  tags:
+    - php
+
+- include: tomcat.yml
+  when: tomcat is defined and tomcat == "enable"
+  tags:
+    - tomcat

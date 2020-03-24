@@ -1,0 +1,117 @@
+---
+####################
+# CloudWatch Logs
+####################
+- name: install awslogs agent
+  yum: name=awslogs
+  tags:
+    - awslogs
+
+- name: set region to /etc/awslogs/awscli.conf
+  replace:
+    dest: /etc/awslogs/awscli.conf
+    regexp: "region = .*"
+    replace: "region = {{ aws_region }}"
+  notify: restart awslogs agent
+  when: awslogs is defined and awslogs == "enable"
+  tags:
+    - awslogs
+
+- name: copy awslogs.conf from template
+  template:
+    src: awslogs.conf.j2
+    dest: /etc/awslogs/awslogs.conf
+    owner: root
+    group: root
+    mode: 0644
+    backup: yes
+  notify: restart awslogs agent
+  when: awslogs is defined and awslogs == "enable"
+  tags:
+    - awslogs
+
+- name: start and enable awslogs
+  service:
+    name: awslogs
+    state: started
+    enabled: yes
+  when: awslogs is defined and awslogs == "enable"
+  tags:
+    - awslogs
+
+####################
+# SSM Agent
+####################
+- name: install ssm agent
+  yum:
+    name: "https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm"
+    state: present
+  tags:
+    - ssm
+
+- name: start and enable ssm agent
+  service:
+    name: amazon-ssm-agent
+    state: started
+    enabled: yes
+  tags:
+    - ssm
+
+####################
+# CodeDeploy Agent
+####################
+- name: install ruby for CodeDeploy
+  yum:
+    name: ruby
+    state: present
+  tags:
+    - codedeploy
+
+- name: check CodeDeploy agent
+  shell: rpm -q codedeploy-agent
+  register: check_codedeploy
+  failed_when: False
+  tags:
+    - codedeploy
+
+- name: download CodeDeploy agent installer
+  get_url:
+    url: "https://aws-codedeploy-{{ aws_region }}.s3.amazonaws.com/latest/install"
+    dest: /tmp/code-deploy-install
+    mode: 0755
+  when: check_codedeploy.rc == 1
+  tags:
+    - codedeploy
+
+- name: install CodeDeploy agent
+  shell: /tmp/code-deploy-install auto
+  when: check_codedeploy.rc == 1
+  notify: restart codedeploy agent
+  tags:
+    - codedeploy
+
+####################
+# inspector agent
+####################
+- name: check inspector agent
+  shell: rpm -q AwsAgent
+  register: check_inspector
+  failed_when: False
+  tags:
+    - inspector
+
+- name: download inspector agent
+  get_url:
+    url: "https://d1wk0tztpsntt1.cloudfront.net/linux/latest/install"
+    dest: /usr/local/src/install
+    mode: 0755
+  when: check_inspector.rc == 1
+  tags:
+    - inspector
+    
+- name: install inspector agent
+  shell: bash /usr/local/src/install
+  when: check_inspector.rc == 1
+  tags:
+    - inspector
+

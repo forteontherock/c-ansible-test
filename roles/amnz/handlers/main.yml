@@ -1,0 +1,40 @@
+- name: restart awslogs agent
+  service:
+    name: awslogs
+    state: restarted
+
+- name: restart rsyslog agent
+  service:
+    name: rsyslog
+    state: restarted
+
+- name: restart codedeploy agent
+  service:
+    name: codedeploy-agent
+    state: restarted
+
+- name: restart monit
+  service:
+    name: monit
+    state: restarted
+
+- name: restart postfix
+  service:
+    name: postfix
+    state: restarted
+
+- name: restart ntpd
+  service:
+    name: ntpd
+    state: restarted
+
+- name: restart datadog-agent
+  service:
+    name: datadog-agent
+    state: restarted
+
+- name: restart crond
+  service:
+    name: crond
+    state: restarted
+  
