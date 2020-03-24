@@ -17,7 +17,8 @@
   service:
     name: monit
     state: restarted
-
+  failed_when: False
+  
 - name: restart postfix
   service:
     name: postfix
