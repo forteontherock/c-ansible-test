@@ -14,7 +14,8 @@
     - htop
     - strace
     - tcpdump
-
+  failed_when: False
+  
 - name: install other necessary packages
   yum:
     name: "{{ item }}"
@@ -32,14 +33,16 @@
     - screen
     - mailx
     - monit
-
+  failed_when: False
+  
 - name: remove unnecessary packages
   yum:
     name: "{{ item }}"
     state: absent
   with_items:
     - sendmail
- 
+  failed_when: False
+  
 - name: copy monit.conf from template
   template:
     src: monit.conf.j2
@@ -58,3 +61,4 @@
   with_items:
     - monit
     - postfix
+  failed_when: False
