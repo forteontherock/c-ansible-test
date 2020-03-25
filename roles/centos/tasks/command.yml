@@ -1,5 +1,14 @@
 ---
 ####################
+# Epel Repo Install
+####################
+- name: install epel-release
+  yum:
+    name: epel-release
+    state: present
+  failed_when: False
+  
+####################
 # Package Install
 ####################
 - name: install necessary packages for investigation
