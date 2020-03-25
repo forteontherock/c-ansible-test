@@ -1,6 +1,2 @@
 - name: Disable epel repo
-  yum_repository:
-    name: epel
-    description: Epel repo
-    metalink: https://mirrors.fedoraproject.org/metalink?repo=epel-7&arch=$basearch&infra=$infra&content=$contentdir
-    enabled: no
+  command: yum-config-manager --disable epel
