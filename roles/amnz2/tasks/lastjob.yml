@@ -1,0 +1,4 @@
+- name: Disable epel repo
+  yum_repository:
+    name: epel
+    enabled: no
