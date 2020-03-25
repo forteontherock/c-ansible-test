@@ -1,10 +1,19 @@
 ---
 ####################
+# Epel Repo Install
+####################
+- name: install epel-release
+  yum:
+    name: epel-release
+    state: present
+    
+####################
 # Package Install
 ####################
 - name: install necessary packages for investigation
   yum:
     name: "{{ item }}"
+    enablerepo: epel
   with_items:
     - dstat
     - sysstat
@@ -19,6 +28,7 @@
 - name: install other necessary packages
   yum:
     name: "{{ item }}"
+    enablerepo: epel
   with_items:
     - epel-release
     - vim
